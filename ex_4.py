@@ -1,70 +1,33 @@
 from data.spc import sentence_dict
 from sklearn import svm
 
-tag_dict = {'OrgBased_In':
-                {
-                    'before': [],
-                    'after': []
-                },
-                'Located_In':
-                    {
-                        'before': [],
-                        'after': []
-                    },
-                'Live_In':
-                    {
-                        'before': [],
-                        'after': []
-                     },
-                'Work_For':
-                    {
-                        'before': [],
-                        'after': [],
-                    },
-                'Kill':
-                    {
-                        'before': [],
-                        'after': []
-                    }
-}
+
+def get_ner_sen_pairs(sen):
+    ner_ent = []
+    for i, w_dict in enumerate(sen):
+        if w_dict['ent_type'] != '' and w_dict['ent_iob'] == 'B':
+            if len(sen) >= i and sen[i+1]['ent_iob'] == 'I':
+                ner_ent.append((i, i+1))
+            ner_ent.append(i)
+    for ner in ner_ent:
+        if isinstance(ner, tuple):
+            print(sen[ner[0]]['text'], sen[ner[1]]['text'])
+        else:
+            print(sen[ner]['text'])
+    return ner_ent
+
 
 def main():
     print(sentence_dict)
-    with open('data/TRAIN.annotations') as fp:
-        for line in fp:
-            sen_id = line.split()[0]
-            words = line.split()[1:]
-            index = words.index('(')
-            words = words[:index]
-            temp = sentence_dict[sen_id]
-            splitter = [i for i in tag_dict.keys() if i in words][0]
-            index = words.index(splitter)
-            for i in range(index):
-                x = [j for j in temp if j['text'] == words[i]]
-                tag_dict[splitter]['before'].append(x)
-            for i in range(index+1, len(words)):
-                x = [j for j in temp if j['text'] == words[i]]
-                tag_dict[splitter]['after'].append(x)
-
-    dict_att = {}
-    for key in tag_dict.keys():
-        print('-----------------------',key,'------------------------')
-        dict_att[key] = {}
-        for att, word_list in tag_dict[key].items():
-            print('-----------------------', att, '------------------------')
-            dict_att[key][att] = {}
-            for word in word_list:
-                word = word[0]
-                if word['ent_type'] not in dict_att[key][att]:
-                    dict_att[key][att][word['ent_type']] = 1
-                else:
-                    dict_att[key][att][word['ent_type']] += 1
-                print(word)
+    for sentence in sentence_dict.items():
+        id_sen, sen = sentence
+        print(id_sen)
+        pairs = get_ner_sen_pairs(sen)
 
 
     model = svm.SVC()
 
-    model.fit()
+    # model.fit()
 
 
 

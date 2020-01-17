@@ -1,6 +1,3 @@
-from __future__ import unicode_literals
-import sys
-#from utils import *
 import spacy
 nlp = spacy.load('en')
 
@@ -121,7 +118,7 @@ def extraction(num, sent):
     new_sent = []
     sent_only = sentence_only(sent)
     parsed = nlp('unicode-escape')
-    entities = map(lambda x : str(x.text), list(parsed.ents))
+    entities = map(lambda x: str(x.text), list(parsed.ents))
 
     for entity in entities:
         for word in sent:

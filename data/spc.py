@@ -5,7 +5,7 @@ from spacy.tokenizer import Tokenizer
 # ToDo: check the import before
 import re
 
-nlp = spacy.load('en_core_web_lg')
+nlp = spacy.load('en')
 from spacy.util import compile_infix_regex
 infixes = nlp.Defaults.prefixes + tuple([r"[-]~"])
 infix_re = spacy.util.compile_infix_regex(infixes)
@@ -22,8 +22,8 @@ def read_lines(fname):
 sentence_dict = {}
 for sent_id, sent_str in read_lines(sys.argv[1]):
     sent = nlp(sent_str)
-    print("#id:", sent_id)
-    print("#text:", sent.text)
+    # print("#id:", sent_id)
+    # print("#text:", sent.text)
     temp = []
     for word in sent:
         head_id = str(word.head.i+1)        # we want ids to be 1 based
@@ -39,7 +39,7 @@ for sent_id, sent_str in read_lines(sys.argv[1]):
             'head_id': head_id,
             'dep': word.dep_,
             'ent_iob': word.ent_iob_,
-            'ent_type':word.ent_type_
+            'ent_type': word.ent_type_
         })
         # print("\t".join([str(word.i+1), word.text, word.lemma_, word.tag_, word.pos_, head_id, word.dep_, word.ent_iob_, word.ent_type_]))
     print()
