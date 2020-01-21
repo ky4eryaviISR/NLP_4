@@ -1,9 +1,12 @@
 
 LABEL = '\tWork_For\t'
 KEYWORDS = {'work', 'head', 'serve', 'retire', 'found', 'star', 'conduct', 'transfer', 'direct', 'perform',
-            'heads', 'former', 'AP', 'of', '\'s',
-            'death', 'murder', 'assassinate', 'fire', 'shoot', 'members', 'director', 'employ', 'company','assassination','assassin','investigate','kill','involve','gunman','hang','claim'}
-PHRASEWORDS = {'of the', 'issued by'}
+            'shoot','assassinate','assassination', 'assassin', 'AP', '\'', '"'}
+            # 'heads', 'former', 'AP'}
+            # #'work', 'head', 'serve', 'retire', 'found', 'star', 'conduct', 'transfer', 'direct', 'perform',
+            # 'heads', 'former', 'AP', 'of', '\'s',
+            # 'death', 'murder','fire', 'members', 'director', 'employ', 'company','investigate','kill','involve','gunman','hang','claim'}
+PHRASEWORDS = {}#{'of the', 'issued by'}
 
 
 class Parser(object):
@@ -129,12 +132,14 @@ class Parser(object):
 
     @staticmethod
     def convert_sentence_2_feature(sen):
-        phrase = []
+        other = []
         for key in PHRASEWORDS:
             for i, w in enumerate(sen):
                 if w['lemma'] == key[0] and sen[i + 1]['lemma'] == key[1]:
-                    phrase.append(key + '=True')
-        return list(set([item['lemma'] + '=True' for item in sen if item['lemma'] in KEYWORDS] + phrase))
+                    other.append(key + '=True')
+                if w['ent_type'] == 'CD' and 'CD=True' not in other:
+                    other.append('CD=True')
+        return list(set([item['lemma'] + '=True' for item in sen if item['lemma'] in KEYWORDS] + other))
 
     @staticmethod
     def convert_ner_2_feature(ner_ent, sen):
@@ -142,8 +147,8 @@ class Parser(object):
         lbl_features = []
         for label, attr in ner_ent.items():
             isWork, source, target = attr['Label'], attr['Source'], attr['Target']
-            f_word = 'f_word=' + source['startText']
             f_txt = 'f_txt=' + source['text']
+            f_word = 'f_word=' + source['startText']
             f_feat = 'f_tag=' + source['tag']
             f_ner = 'f_ner=' + source['NER']
             f_dep = 'f_dep=' + source['startDep']
@@ -162,8 +167,10 @@ class Parser(object):
             p_tag = 'p_tag=' + (sen[target['id'] - 1]['tag'] if target['id'] - 1 >= 0 else 'START')
             pp_tag = 'pp_tag=' + (sen[target['id'] - 2]['tag'] if target['id'] - 2 >= 0 else 'START')
             dist = 'dist=' + str(target['id'] - source['id'])
-            raw_feat = [isWork, f_word, f_ner, t_ner, t_word, f_feat, t_feat,
-                        n_tag, nn_tag, p_tag, pp_tag, dist, f_dep, t_dep, n_dep, nn_dep, p_dep, pp_dep,f_txt,t_txt]
+            raw_feat = [isWork,
+                        f_txt,t_txt,
+                        f_word, f_ner, t_ner, t_word, f_feat, t_feat, n_tag,
+                        nn_tag, p_tag, pp_tag, dist, f_dep, t_dep, n_dep, nn_dep, p_dep, pp_dep]
             ners_features.append(raw_feat)
             lbl_features.append(label)
         return ners_features, lbl_features

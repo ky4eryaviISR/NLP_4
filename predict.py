@@ -4,6 +4,8 @@ from sys import argv
 import numpy as np
 import spacy
 from sklearn.metrics import confusion_matrix, classification_report
+
+from ScoreCalculation import calculate_accuracy
 from dataParser import Parser, LABEL
 
 nlp = spacy.load('en_core_web_lg')
@@ -30,7 +32,6 @@ class Classifier(object):
                 gold[sen_id] = []
             gold[sen_id].append(label)
         return gold
-
 
     def get_vector(self, sen_f):
         vec = np.zeros(len(self.f2id))
@@ -68,7 +69,7 @@ class Classifier(object):
         return any([i for i in self.gold[sen_id] if lbl==i])
 
     def get_score(self):
-        confusion_matrix(self.real_values, self.predicted)
+        print(confusion_matrix(self.real_values, self.predicted))
         print(classification_report(self.real_values, self.predicted))
 
 
@@ -96,3 +97,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+    calculate_accuracy(argv[4], 'result')

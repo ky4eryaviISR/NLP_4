@@ -16,15 +16,15 @@ def calculate_accuracy(real, predicted):
         pred_dict.append(sen_id + ' ' + label)
     expected_WorkFor = [item for item in real_dict if LABEL in item]
     TP = len([i for i in pred_dict if i in expected_WorkFor])
-    FN = len([i for i in pred_dict if i not in expected_WorkFor])
-    FP = len([i for i in expected_WorkFor if i not in pred_dict])
+    FP = len([i for i in pred_dict if i not in expected_WorkFor])
+    FN = len([i for i in expected_WorkFor if i not in pred_dict])
     TN = len(real_dict) - TP - FP - FN
     precision = TP / (TP + FP)
     recall = TP / (TP + FN)
     F1 = 2*(precision*recall)/(precision+recall)
-    print(f'{TP} {FP}\n{FN} {TN}\n')
+    print(f'{TP} {FN}\n{FP} {TN}\n')
     print(f'Precision={precision} recall={recall} F1={F1}')
     print('x')
 
 
-calculate_accuracy(argv[1], argv[2])
+# calculate_accuracy(argv[1], argv[2])
