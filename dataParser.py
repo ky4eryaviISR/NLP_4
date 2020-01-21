@@ -100,7 +100,7 @@ class Parser(object):
                 "startDep": ent.root.dep_,
                 "startHead": ent.root.head.text,
                 "tag": ent.root.tag_,
-                "id": ent.root.i,
+                "id_start": ent.root.i,
                 "text": txt.strip()
             }
         for ent in parsed.noun_chunks:
@@ -110,7 +110,7 @@ class Parser(object):
                 if txt.startswith('the '):
                     txt = txt[4:]
 
-            if ',' in txt:
+            if txt.endswith(','):
                 index = txt.index(',')
                 txt = txt[:index].strip()
 

@@ -2,10 +2,22 @@ from sys import argv
 
 from dataParser import LABEL
 
+def same(x,lst):
+    return x in lst
+
 
 def almost_same(x, lst):
+    print(x)
     sen_id, x = x.split(' ', 1)
-    return any([item for item in lst if sen_id in item and (x in item or item in x)])
+    source, label, target = x.split('\t')
+    for item in lst:
+        gold_id, x = item.split(' ',1)
+        if gold_id!=sen_id:
+            continue
+        gold_s, gold_l,gold_t = x.split('\t')
+        if (gold_s in source or source in gold_s) and (gold_t in target or target in gold_t):
+            return True
+    return False
 
 
 def calculate_accuracy(real, predicted):
@@ -32,4 +44,5 @@ def calculate_accuracy(real, predicted):
     print('x')
 
 
-# calculate_accuracy(argv[1], argv[2])
+if __name__=='__main__':
+    calculate_accuracy(argv[1], argv[2])
