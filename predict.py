@@ -82,7 +82,6 @@ class Classifier(object):
         print(classification_report(self.real_values, self.predicted))
 
 
-
 def evaluate(sen_f, f2id, gold):
     classifier = Classifier(f2id, gold)
     with open('result', 'w') as fp:
@@ -92,7 +91,7 @@ def evaluate(sen_f, f2id, gold):
             if len(res) > 0:
                 for item in res:
                     # print(f'{id_sen}\t{item}\t({sentence.strip()})')
-                    fp.write(f'{id_sen}\t{item}\t({sentence.strip()})\n')
+                    fp.write(f'{id_sen}\t{item.strip()}\t({sentence.strip()})\n')
     classifier.get_score()
 
 
