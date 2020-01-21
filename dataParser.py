@@ -2,8 +2,9 @@
 LABEL = '\tWork_For\t'
 KEYWORDS = {'work', 'head', 'serve', 'retire', 'found', 'star', 'conduct', 'transfer', 'direct', 'perform',
             'heads', 'former', 'AP', 'of', '\'s',
-            'death', 'murder', 'assassinate', 'fire', 'shoot', 'members', 'director', 'employ', 'company'}
-PHRASEWORDS = {'of the'}
+            'death', 'murder', 'assassinate', 'fire', 'shoot', 'members', 'director', 'employ', 'company','assassination','assassin','investigate','kill','involve','gunman','hang','claim'}
+PHRASEWORDS = {'of the', 'issued by'}
+
 
 class Parser(object):
 
@@ -97,7 +98,8 @@ class Parser(object):
                 "startDep": ent.root.dep_,
                 "startHead": ent.root.head.text,
                 "tag": ent.root.tag_,
-                "id": ent.root.i
+                "id": ent.root.i,
+                "text": txt.strip()
             }
         for ent in parsed.noun_chunks:
             txt = ent.text
@@ -120,7 +122,8 @@ class Parser(object):
                 "startDep": ent.root.dep_,
                 "startHead": ent.root.head.text,
                 "tag": ent.root.tag_,
-                "id": ent.root.i
+                "id": ent.root.i,
+                "text": txt.strip()
             }
         return ner
 
@@ -140,18 +143,27 @@ class Parser(object):
         for label, attr in ner_ent.items():
             isWork, source, target = attr['Label'], attr['Source'], attr['Target']
             f_word = 'f_word=' + source['startText']
-            f_feat = 's_tag=' + source['tag']
+            f_txt = 'f_txt=' + source['text']
+            f_feat = 'f_tag=' + source['tag']
             f_ner = 'f_ner=' + source['NER']
+            f_dep = 'f_dep=' + source['startDep']
+            n_dep = 'n_dep=' + (sen[source['id'] + 1]['dep'] if source['id'] + 1 < len(sen) else 'END')
+            nn_dep = 'nn_dep=' + (sen[source['id'] + 1]['dep'] if source['id'] + 1 < len(sen) else 'END')
             n_tag = 'n_tag=' + (sen[source['id'] + 1]['tag'] if source['id'] + 1 < len(sen) else 'END')
             nn_tag = 'nn_tag=' + (sen[source['id'] + 2]['tag'] if source['id'] + 2 < len(sen) else 'END')
 
+            t_txt = 't_txt=' + target['text']
             t_word = 't_word=' + target['startText']
             t_feat = 't_tag=' + target['tag']
             t_ner = 't_ner=' + target['NER']
+            t_dep = 't_dep=' + target['startDep']
+            p_dep = 'p_dep=' + (sen[target['id'] - 1]['dep'] if target['id'] - 1 >= 0 else 'START')
+            pp_dep = 'pp_dep=' + (sen[target['id'] - 2]['dep'] if target['id'] - 2 >= 0 else 'START')
             p_tag = 'p_tag=' + (sen[target['id'] - 1]['tag'] if target['id'] - 1 >= 0 else 'START')
             pp_tag = 'pp_tag=' + (sen[target['id'] - 2]['tag'] if target['id'] - 2 >= 0 else 'START')
             dist = 'dist=' + str(target['id'] - source['id'])
-            raw_feat = [isWork, f_word, f_ner, t_ner, t_word, f_feat, t_feat, n_tag, nn_tag, p_tag, pp_tag, dist]
+            raw_feat = [isWork, f_word, f_ner, t_ner, t_word, f_feat, t_feat,
+                        n_tag, nn_tag, p_tag, pp_tag, dist, f_dep, t_dep, n_dep, nn_dep, p_dep, pp_dep,f_txt,t_txt]
             ners_features.append(raw_feat)
             lbl_features.append(label)
         return ners_features, lbl_features

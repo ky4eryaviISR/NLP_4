@@ -39,10 +39,10 @@ class Classifier(object):
                 vec[self.f2id[s]] = 1
         return vec
 
-    def predict(self, sen, sen_id, with_gold=False):
+    def predict(self, sentence, sen_id, with_gold=False):
 
         res = []
-        parsed = nlp(sen)
+        parsed = nlp(sentence)
         sen_parsed = Parser.load_to_dict(parsed)
         ner_dict = Parser.load_ner(parsed)
         ner_ent = Parser.build_ner_pair(ner_dict)
@@ -57,6 +57,9 @@ class Classifier(object):
                 res.append(label)
             if with_gold:
                 real = self.get_gold(label, sen_id)
+                if real == False and bool(y_hat) == True:
+                    print(label)
+                    print(sentence)
                 self.real_values.append(real)
                 self.predicted.append(bool(y_hat))
         return res

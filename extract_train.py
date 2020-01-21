@@ -70,7 +70,8 @@ def build_sparse_vectors(f2id):
 def train_model():
     x, y = load_svmlight_file('sparse', zero_based=True)
     print(datetime.now())
-    model = LogisticRegression(multi_class='auto', solver='liblinear', class_weight='balanced', penalty='l1',C=0.1)
+    model = LogisticRegression(multi_class='auto', solver='liblinear',
+                               class_weight='balanced', penalty='l1')
     model.fit(x, y)
     print(model.score(x, y))
     print(datetime.now())
