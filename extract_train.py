@@ -65,6 +65,7 @@ def build_sparse_vectors(f2id):
                 temp_vec.append(f2id[vec.strip()])
             temp += ' '.join([str(i)+':1' for i in sorted(temp_vec)])
             fp.write(temp+'\n')
+        print("Total features: ",len(f2id))
 
 
 def train_model():
@@ -73,6 +74,7 @@ def train_model():
     model = LogisticRegression(multi_class='auto', solver='liblinear',
                                class_weight='balanced',
                                penalty='l1')
+    model = svm.SVC(C=0.3,class_weight='balanced',kernel='linear', degree=3, gamma='auto')
     model.fit(x, y)
     print(model.score(x, y))
     print(datetime.now())

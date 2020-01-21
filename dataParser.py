@@ -1,12 +1,11 @@
 
 LABEL = '\tWork_For\t'
 KEYWORDS = {'work', 'head', 'serve', 'retire', 'found', 'star', 'conduct', 'transfer', 'direct', 'perform',
-            'shoot','assassinate','assassination', 'assassin', 'AP', '\'', '"'}
-            # 'heads', 'former', 'AP'}
-            # #'work', 'head', 'serve', 'retire', 'found', 'star', 'conduct', 'transfer', 'direct', 'perform',
-            # 'heads', 'former', 'AP', 'of', '\'s',
-            # 'death', 'murder','fire', 'members', 'director', 'employ', 'company','investigate','kill','involve','gunman','hang','claim'}
-PHRASEWORDS = {}#{'of the', 'issued by'}
+            'shoot','assassinate','assassination', 'assassin', '\'', '"',
+            'heads', 'former', 'AP'
+            'work', 'head', 'serve', 'retire', 'found', 'star', 'conduct', 'transfer', 'direct', 'perform',
+            'heads', 'former', 'AP', '\'s',
+            'death', 'murder','fire', 'members', 'director', 'employ', 'company','investigate','kill','involve','gunman','hang','claim'}
 
 
 class Parser(object):
@@ -133,12 +132,9 @@ class Parser(object):
     @staticmethod
     def convert_sentence_2_feature(sen):
         other = []
-        for key in PHRASEWORDS:
-            for i, w in enumerate(sen):
-                if w['lemma'] == key[0] and sen[i + 1]['lemma'] == key[1]:
-                    other.append(key + '=True')
-                if w['ent_type'] == 'CD' and 'CD=True' not in other:
-                    other.append('CD=True')
+        for i, w in enumerate(sen):
+            if w['ent_type'] == 'CD' and 'CD=True' not in other:
+                other.append('CD=True')
         return list(set([item['lemma'] + '=True' for item in sen if item['lemma'] in KEYWORDS] + other))
 
     @staticmethod
@@ -147,6 +143,8 @@ class Parser(object):
         lbl_features = []
         for label, attr in ner_ent.items():
             isWork, source, target = attr['Label'], attr['Source'], attr['Target']
+            if source['NER']+' '+target['NER'] not in {'PERSON ORG', 'PERSON None', 'ORG ORG', 'PERSON PERSON', 'DATE ORG'}:
+                continue
             f_txt = 'f_txt=' + source['text']
             f_word = 'f_word=' + source['startText']
             f_feat = 'f_tag=' + source['tag']

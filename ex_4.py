@@ -2,7 +2,6 @@ from sys import argv
 import numpy as np
 from datetime import datetime
 
-from sklearn import svm
 from sklearn.datasets import load_svmlight_file
 from sklearn.linear_model import LogisticRegression
 from data.spc import corpus_parse

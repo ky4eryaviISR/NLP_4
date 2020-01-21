@@ -52,14 +52,23 @@ class Classifier(object):
         if len(sen_features) > 0:
             features = [line + sen_features for line in features]
         for sen, label in zip(features, labels):
-            sen = self.get_vector(sen)
-            y_hat = self.model.predict(sen.reshape(1, -1))[0]
+            tmp = sen
+            source = [i.split('=')[1] for i in sen if i is not None and i.startswith('f_ner')][0]
+            target = [i.split('=')[1] for i in sen if i is not None and i.startswith('t_ner')][0]
+
+            if target not in {'PERSON', 'ORG', 'None'} or source not in {'PERSON', 'DATE', 'ORG'} or \
+                source+' '+target not in {'PERSON ORG', 'PERSON None', 'ORG ORG', 'PERSON PERSON', 'DATE ORG'}:
+                y_hat = 0
+            else:
+                sen = self.get_vector(sen)
+                y_hat = self.model.predict(sen.reshape(1, -1))[0]
             if y_hat == 1:
                 res.append(label)
             if with_gold:
                 real = self.get_gold(label, sen_id)
                 if real == False and bool(y_hat) == True:
                     print(label)
+                    print(tmp)
                     print(sentence)
                 self.real_values.append(real)
                 self.predicted.append(bool(y_hat))
