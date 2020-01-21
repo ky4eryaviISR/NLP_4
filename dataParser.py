@@ -1,6 +1,9 @@
 
 LABEL = '\tWork_For\t'
-
+KEYWORDS = {'work', 'head', 'serve', 'retire', 'found', 'star', 'conduct', 'transfer', 'direct', 'perform',
+            'heads', 'former', 'AP', 'of', '\'s',
+            'death', 'murder', 'assassinate', 'fire', 'shoot', 'members', 'director', 'employ', 'company'}
+PHRASEWORDS = {'of the'}
 
 class Parser(object):
 
@@ -17,37 +20,43 @@ class Parser(object):
         return feat2id
 
     @staticmethod
-    def build_feature_vec(ner):
-        with open('feature_file', 'w') as fp:
-            for _, value in ner.items():
-                lbl, source, target, sen = value.values()
-                ner_s = 'sourceNER=' + source['NER']
-                ner_t = 'TargetNER=' + target['NER']
-                if lbl == 'True':
-                    fp.write("True " + ner_s + '/' + ner_t + '\n')
-                else:
-                    fp.write("False " + ner_s + '/' + ner_t + '\n')
+    def write_2_file(feat, fp):
+
+        for line in feat:
+            lbl = line[0]
+            vec = '/'.join(line[1:])
+            if lbl == 'True':
+                fp.write("True " + vec + '\n')
+            else:
+                fp.write("False " + vec + '\n')
 
     i = 1
 
     @staticmethod
-    def build_ner_pair(ner, gold, sen):
+    def build_ner_pair(ner, gold=None):
         ner_pair = {}
         for n1, n1_val in ner.items():
             for n2, n2_val in ner.items():
                 lbl = n1 + LABEL + n2
-                if lbl in gold:
+                if n1 == n2:
+                    continue
+                if not gold:
+                    ner_pair[lbl] = {'Label': None,
+                                     'Source': n1_val,
+                                     'Target': n2_val,
+                                     }
+                elif lbl in gold:
                     print(Parser.i)
-                    Parser.i+=1
+                    Parser.i += 1
                     ner_pair[lbl] = {'Label': 'True',
                                      'Source': n1_val,
                                      'Target': n2_val,
-                                     'Sentence': sen}
+                                     }
                 else:
                     ner_pair[lbl] = {'Label': 'False',
                                      'Source': n1_val,
                                      'Target': n2_val,
-                                     'Sentence': sen}
+                                     }
         return ner_pair
 
     @staticmethod
@@ -72,7 +81,7 @@ class Parser(object):
         return temp
 
     @staticmethod
-    def load_ner(parsed, sen_id):
+    def load_ner(parsed):
         ner = {}
         for ent in parsed.ents:
             txt = ent.text
@@ -87,7 +96,8 @@ class Parser(object):
                 "startText": ent.root.text,
                 "startDep": ent.root.dep_,
                 "startHead": ent.root.head.text,
-                "id": sen_id
+                "tag": ent.root.tag_,
+                "id": ent.root.i
             }
         for ent in parsed.noun_chunks:
             txt = ent.text
@@ -107,9 +117,41 @@ class Parser(object):
             ner[txt] = {
                 "NER": ent.root.ent_type_ if ent.root.ent_type_ != '' else 'None',
                 "startText": ent.root.text,
-                "startText": ent.root.text,
                 "startDep": ent.root.dep_,
                 "startHead": ent.root.head.text,
-                "id": sen_id
+                "tag": ent.root.tag_,
+                "id": ent.root.i
             }
         return ner
+
+    @staticmethod
+    def convert_sentence_2_feature(sen):
+        phrase = []
+        for key in PHRASEWORDS:
+            for i, w in enumerate(sen):
+                if w['lemma'] == key[0] and sen[i + 1]['lemma'] == key[1]:
+                    phrase.append(key + '=True')
+        return list(set([item['lemma'] + '=True' for item in sen if item['lemma'] in KEYWORDS] + phrase))
+
+    @staticmethod
+    def convert_ner_2_feature(ner_ent, sen):
+        ners_features = []
+        lbl_features = []
+        for label, attr in ner_ent.items():
+            isWork, source, target = attr['Label'], attr['Source'], attr['Target']
+            f_word = 'f_word=' + source['startText']
+            f_feat = 's_tag=' + source['tag']
+            f_ner = 'f_ner=' + source['NER']
+            n_tag = 'n_tag=' + (sen[source['id'] + 1]['tag'] if source['id'] + 1 < len(sen) else 'END')
+            nn_tag = 'nn_tag=' + (sen[source['id'] + 2]['tag'] if source['id'] + 2 < len(sen) else 'END')
+
+            t_word = 't_word=' + target['startText']
+            t_feat = 't_tag=' + target['tag']
+            t_ner = 't_ner=' + target['NER']
+            p_tag = 'p_tag=' + (sen[target['id'] - 1]['tag'] if target['id'] - 1 >= 0 else 'START')
+            pp_tag = 'pp_tag=' + (sen[target['id'] - 2]['tag'] if target['id'] - 2 >= 0 else 'START')
+            dist = 'dist=' + str(target['id'] - source['id'])
+            raw_feat = [isWork, f_word, f_ner, t_ner, t_word, f_feat, t_feat, n_tag, nn_tag, p_tag, pp_tag, dist]
+            ners_features.append(raw_feat)
+            lbl_features.append(label)
+        return ners_features, lbl_features

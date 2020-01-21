@@ -3,6 +3,8 @@ from sys import argv
 
 import spacy
 from datetime import datetime
+
+from sklearn import svm
 from sklearn.datasets import load_svmlight_file
 from sklearn.linear_model import LogisticRegression
 
@@ -31,15 +33,21 @@ def get_gold(gold_f):
 def parse_corpus(train_f, is_train=False):
     ner_pair = {}
     gold = get_gold(argv[2])
-    gold_lst = list([j for i in list(gold.values()) for j in i if 'Work_For' in j])
-    for line in open(train_f):
-        sen_id, sen = line.split('\t')
-        parsed = nlp(sen)
-        sen_parsed = Parser.load_to_dict(parsed)
-        ner_dict = Parser.load_ner(parsed, sen_id)
-        ner_pair.update(Parser.build_ner_pair(ner_dict, gold[sen_id], sen_parsed))
-    Parser.build_feature_vec(ner_pair)
+    gold_lst = len(list([j for i in list(gold.values()) for j in i if 'Work_For' in j]))
+    with open('feature_file', 'w') as fp:
+        for line in open(train_f):
+            sen_id, sen = line.split('\t')
+            parsed = nlp(sen)
+            sen_parsed = Parser.load_to_dict(parsed)
+            ner_dict = Parser.load_ner(parsed)
+            ner_ent = Parser.build_ner_pair(ner_dict, gold[sen_id])
+            sen_features = Parser.convert_sentence_2_feature(sen_parsed)
+            features, _ = Parser.convert_ner_2_feature(ner_ent, sen_parsed)
+            if len(sen_features) > 0:
+                features = [line + sen_features for line in features]
+            Parser.write_2_file(features, fp)
     pred_ent = list(ner_pair.keys())
+    print(f"Find good labels entities using spacy parser: {Parser.i}/{gold_lst}")
     if is_train:
         feat2id = Parser.build_vocabulary()
     else:
@@ -62,7 +70,7 @@ def build_sparse_vectors(f2id):
 def train_model():
     x, y = load_svmlight_file('sparse', zero_based=True)
     print(datetime.now())
-    model = LogisticRegression(multi_class='auto', solver='liblinear', class_weight='balanced', penalty='l1')
+    model = LogisticRegression(multi_class='auto', solver='liblinear', class_weight='balanced', penalty='l1',C=0.1)
     model.fit(x, y)
     print(model.score(x, y))
     print(datetime.now())
