@@ -7,7 +7,6 @@ def same(x,lst):
 
 
 def almost_same(x, lst):
-    print(x)
     sen_id, x = x.split(' ', 1)
     source, label, target = x.split('\t')
     for item in lst:
@@ -20,7 +19,7 @@ def almost_same(x, lst):
     return False
 
 
-def calculate_accuracy(real, predicted):
+def calculate_accuracy(real, predicted, func_same=almost_same):
     real_dict = []
     pred_dict = []
     for line in open(real):
@@ -32,17 +31,21 @@ def calculate_accuracy(real, predicted):
         label = line.split('(')[0].split('\t', 1)[1].strip()
         pred_dict.append(sen_id + ' ' + label)
     expected_WorkFor = [item for item in real_dict if LABEL in item]
-    TP = len([i for i in pred_dict if almost_same(i, expected_WorkFor)])
-    FP = len([i for i in pred_dict if i not in expected_WorkFor])
-    FN = len([i for i in expected_WorkFor if i not in pred_dict])
+    TP = len([i for i in pred_dict if func_same(i, expected_WorkFor)])
+    FP = len([i for i in pred_dict if not func_same(i, expected_WorkFor)])
+    FN = len([i for i in expected_WorkFor if not func_same(i, pred_dict)])
     TN = len(real_dict) - TP - FP - FN
     precision = TP / (TP + FP)
     recall = TP / (TP + FN)
     F1 = 2*(precision*recall)/(precision+recall)
     print(f'{TP} {FN}\n{FP} {TN}\n')
     print(f'Precision={precision} recall={recall} F1={F1}')
-    print('x')
+    with open('FN', 'w') as fp:
+        fp.write('\n'.join([i for i in expected_WorkFor if not func_same(i, pred_dict)]))
+    with open('FP', 'w') as fp:
+        fp.write('\n'.join([i.split()[0] for i in pred_dict if not func_same(i, expected_WorkFor)]))
 
 
-if __name__=='__main__':
-    calculate_accuracy(argv[1], argv[2])
+if __name__ == '__main__':
+    func_same = argv[3] if len(argv)==4 else almost_same
+    calculate_accuracy(argv[1], argv[2], func_same)
