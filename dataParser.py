@@ -1,11 +1,9 @@
 
 LABEL = '\tWork_For\t'
 KEYWORDS = {'work', 'head', 'serve', 'retire', 'found', 'star', 'conduct', 'transfer', 'direct', 'perform',
-            'shoot','assassinate','assassination', 'assassin', '\'', '"',
-            'heads', 'former', 'AP'
-            'work', 'head', 'serve', 'retire', 'found', 'star', 'conduct', 'transfer', 'direct', 'perform',
+            'shoot','assassinate', 'assassination', 'assassin', '\'', '"',
             'heads', 'former', 'AP', '\'s',
-            'death', 'murder','fire', 'members', 'director', 'employ', 'company','investigate','kill','involve','gunman','hang','claim'}
+            'death', 'murder', 'fire', 'members', 'director', 'employ', 'company', 'investigate', 'kill', 'involve', 'gunman', 'hang', 'claim'}
 
 
 class Parser(object):
@@ -100,7 +98,8 @@ class Parser(object):
                 "startDep": ent.root.dep_,
                 "startHead": ent.root.head.text,
                 "tag": ent.root.tag_,
-                "id_start": ent.root.i,
+                "id_start": ent.start,
+                "id_end": ent.end,
                 "text": txt.strip()
             }
         for ent in parsed.noun_chunks:
@@ -124,7 +123,8 @@ class Parser(object):
                 "startDep": ent.root.dep_,
                 "startHead": ent.root.head.text,
                 "tag": ent.root.tag_,
-                "id": ent.root.i,
+                "id_start": ent.start,
+                "id_end": ent.end,
                 "text": txt.strip()
             }
         return ner
@@ -150,21 +150,21 @@ class Parser(object):
             f_feat = 'f_tag=' + source['tag']
             f_ner = 'f_ner=' + source['NER']
             f_dep = 'f_dep=' + source['startDep']
-            n_dep = 'n_dep=' + (sen[source['id'] + 1]['dep'] if source['id'] + 1 < len(sen) else 'END')
-            nn_dep = 'nn_dep=' + (sen[source['id'] + 1]['dep'] if source['id'] + 1 < len(sen) else 'END')
-            n_tag = 'n_tag=' + (sen[source['id'] + 1]['tag'] if source['id'] + 1 < len(sen) else 'END')
-            nn_tag = 'nn_tag=' + (sen[source['id'] + 2]['tag'] if source['id'] + 2 < len(sen) else 'END')
+            n_dep = 'n_dep=' + (sen[source['id_end']]['dep'] if source['id_end'] < len(sen) else 'END')
+            nn_dep = 'nn_dep=' + (sen[source['id_end']+1]['dep'] if source['id_end'] + 1 < len(sen) else 'END')
+            n_tag = 'n_tag=' + (sen[source['id_end']]['tag'] if source['id_end'] < len(sen) else 'END')
+            nn_tag = 'nn_tag=' + (sen[source['id_end'] + 1]['tag'] if source['id_end'] + 1 < len(sen) else 'END')
 
             t_txt = 't_txt=' + target['text']
             t_word = 't_word=' + target['startText']
             t_feat = 't_tag=' + target['tag']
             t_ner = 't_ner=' + target['NER']
             t_dep = 't_dep=' + target['startDep']
-            p_dep = 'p_dep=' + (sen[target['id'] - 1]['dep'] if target['id'] - 1 >= 0 else 'START')
-            pp_dep = 'pp_dep=' + (sen[target['id'] - 2]['dep'] if target['id'] - 2 >= 0 else 'START')
-            p_tag = 'p_tag=' + (sen[target['id'] - 1]['tag'] if target['id'] - 1 >= 0 else 'START')
-            pp_tag = 'pp_tag=' + (sen[target['id'] - 2]['tag'] if target['id'] - 2 >= 0 else 'START')
-            dist = 'dist=' + str(target['id'] - source['id'])
+            p_dep = 'p_dep=' + (sen[target['id_start'] - 1]['dep'] if target['id_start'] - 1 >= 0 else 'START')
+            pp_dep = 'pp_dep=' + (sen[target['id_start'] - 2]['dep'] if target['id_start'] - 2 >= 0 else 'START')
+            p_tag = 'p_tag=' + (sen[target['id_start'] - 1]['tag'] if target['id_start'] - 1 >= 0 else 'START')
+            pp_tag = 'pp_tag=' + (sen[target['id_start'] - 2]['tag'] if target['id_start'] - 2 >= 0 else 'START')
+            dist = 'dist=' + str(target['id_start'] - source['id_start'])
             raw_feat = [isWork,
                         f_txt,t_txt,
                         f_word, f_ner, t_ner, t_word, f_feat, t_feat, n_tag,
