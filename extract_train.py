@@ -31,6 +31,11 @@ def get_gold(gold_f):
 
 
 def parse_corpus(train_f, is_train=False):
+    """
+    creating feature file for debug
+    creating dictionary for converting feature to index
+    creating sparse matrix at the end
+    """
     ner_pair = {}
     gold = get_gold(argv[2])
     gold_lst = len(list([j for i in list(gold.values()) for j in i if 'Work_For' in j]))
@@ -46,8 +51,7 @@ def parse_corpus(train_f, is_train=False):
             if len(sen_features) > 0:
                 features = [line + sen_features for line in features]
             Parser.write_2_file(features, fp)
-    pred_ent = list(ner_pair.keys())
-    print(f"Find good labels entities using spacy parser: {Parser.i}/{gold_lst}")
+    print(f"Find good labels entities using spacy parser: {Parser.gold_ent}/{gold_lst}")
     if is_train:
         feat2id = Parser.build_vocabulary()
     else:
@@ -56,6 +60,9 @@ def parse_corpus(train_f, is_train=False):
 
 
 def build_sparse_vectors(f2id):
+    """
+    build sparse vectors using feature file
+    """
     with open('sparse', 'w') as fp:
         for line in open('feature_file'):
             label = line.split()[0]
@@ -69,23 +76,25 @@ def build_sparse_vectors(f2id):
 
 
 def train_model():
+    """
+    training the model and printing the score of it
+    :return:
+    """
     x, y = load_svmlight_file('sparse', zero_based=True)
     print(datetime.now())
-    model = LogisticRegression(multi_class='auto', solver='liblinear',
-                               class_weight='balanced',
-                               penalty='l1')
-    model = svm.SVC(C=0.3,class_weight='balanced',kernel='linear', degree=3, gamma='auto')
+    model = svm.SVC(C=0.6, class_weight='balanced', kernel='linear', degree=3, gamma='auto')
     model.fit(x, y)
     print(model.score(x, y))
     print(datetime.now())
-    pickle.dump(model, open('model', 'wb'))
+    model_file = argv[3] if len(argv) > 3 else 'model'
+    pickle.dump(model, open(model_file, 'wb'))
     return model
 
 
-def main():
+def train():
     parse_corpus(argv[1], is_train=True)
     train_model()
 
 
 if __name__ == '__main__':
-    main()
+    train()

@@ -1,12 +1,19 @@
 from sys import argv
-
 from dataParser import LABEL
 
-def same(x,lst):
+
+def same(x, lst):
+    """
+    check if list of entities contains x
+    """
     return x in lst
 
 
 def almost_same(x, lst):
+    """
+    check if x part of the entities inside list
+    or one of the entities inside list is part of x
+    """
     sen_id, x = x.split(' ', 1)
     source, label, target = x.split('\t')
     for item in lst:
@@ -20,6 +27,9 @@ def almost_same(x, lst):
 
 
 def calculate_accuracy(real, predicted, func_same=almost_same):
+    """
+    calculate precision, recal, F1 score
+    """
     real_dict = []
     pred_dict = []
     for line in open(real):
@@ -43,9 +53,9 @@ def calculate_accuracy(real, predicted, func_same=almost_same):
     with open('FN', 'w') as fp:
         fp.write('\n'.join([i for i in expected_WorkFor if not func_same(i, pred_dict)]))
     with open('FP', 'w') as fp:
-        fp.write('\n'.join([i.split()[0] for i in pred_dict if not func_same(i, expected_WorkFor)]))
+        fp.write('\n'.join([i for i in pred_dict if not func_same(i, expected_WorkFor)]))
 
 
 if __name__ == '__main__':
-    func_same = argv[3] if len(argv)==4 else almost_same
+    func_same = argv[3] if len(argv) == 4 else almost_same
     calculate_accuracy(argv[1], argv[2], func_same)

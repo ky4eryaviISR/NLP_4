@@ -133,3 +133,10 @@ feat_dict
 feature_file
 result
 sparse
+FN
+FP
+FN failure of model.png
+FP failure of model.png
+best_model
+Figure_1.png
+output_annotation
